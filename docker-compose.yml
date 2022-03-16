@@ -1,0 +1,78 @@
+version: "3"
+services:
+  docker_dind:
+    container_name: docker_dind
+    labels:
+      docker_dind: "Docker in Docker"
+    image: docker:dind
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home
+    restart: unless-stopped
+    networks:
+      jenkins:
+        aliases:
+          - docker
+    ports:
+      - "2376:2376"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "5"
+    # WARNING slows Jenkins down
+    # memswap_limit: -1
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.50'
+    #       memory: 500M
+    #     reservations:
+    #       memory: 176M
+
+  jenkins:
+    container_name: jenkins-docker
+    labels:
+      jenkins: "Jenkins Server"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jenkins
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home
+    depends_on:
+      - docker_dind
+    restart: unless-stopped
+    networks:
+      - jenkins
+    ports:
+      - "5353:8080"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "5"
+    # memswap_limit: -1
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.50'
+    #       memory: 500M
+    #     reservations:
+    #       memory: 176M
+
+volumes:
+  jenkins-docker-certs:
+  jenkins-data:
+
+networks:
+  jenkins:
+    driver: bridge
