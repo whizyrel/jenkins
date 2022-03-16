@@ -33,5 +33,5 @@ jobs:
         if: ${{ cancelled() == false && failure() == false }}
         run: |
           chmod +x nginx-conf-gen.sh
-          PASSWORD | sudo -S ./nginx-conf-gen.sh jenkins.evryword.com.ng --purpose=frontend 5353 jenkins-config.conf
+          echo ${{secrets.SSH_PASSWORD}} | sudo -S ./nginx-conf-gen.sh jenkins.evryword.com.ng --purpose=frontend 5353 jenkins-config.conf
           docker-compose up -d
