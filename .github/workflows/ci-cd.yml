@@ -1,0 +1,37 @@
+name: Jenkins CI/CD
+
+on:
+  push:
+    branches: [ deploy ]
+  pull_request:
+    branches: [ deploy ]
+
+jobs:
+  deploy:
+
+    runs-on: [self-hosted, linux, x64, gci]
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+      - name: Checks Out to Repo 
+        uses: actions/checkout@v2
+
+      - name: Create config directory
+        if: ${{ cancelled() == false && failure() == false }}
+        run: |
+          mkdir -p /home/${{secrets.USER}}/${{secrets.APP_PATH}}
+      
+      - name: Copy Source files
+        if: ${{ cancelled() == false && failure() == false }}
+        run: |
+          cp docker-compose.yml Dockerfile nginx-conf-gen.sh -t /home/${{secrets.USER}}/${{secrets.APP_PATH}}
+      
+      - name: Run Config
+        if: ${{ cancelled() == false && failure() == false }}
+        run: |
+          chmod +x nginx-conf-gen.sh
+          PASSWORD | sudo -S ./nginx-conf-gen.sh jenkins.evryword.com.ng --purpose=frontend 5353 jenkins-config.conf
+          docker-compose up -d
