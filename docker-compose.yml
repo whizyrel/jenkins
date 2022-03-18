@@ -55,6 +55,7 @@ services:
       - jenkins
     ports:
       - "5353:8080"
+      - "50000:50000"
     logging:
       driver: "json-file"
       options:
