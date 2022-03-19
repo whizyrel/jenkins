@@ -49,33 +49,33 @@ else
 fi
 
 conf="
-server {
-    server_name $HOSTNAME;
-    listen $HTTP_PORT;
-    listen [::]:$HTTP_PORT;
-
-    location / {
-        return 301 https://\$host:$HTTPS_PORT\$request_uri;
-    }
-}
-
-server {
-    server_name $HOSTNAME;
-    listen $HTTPS_PORT ssl http2;
-    listen [::]:$HTTPS_PORT ssl http2;
-
-    location / {
-        proxy_pass http://localhost:$DEST_PORT;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$http_host;
-        proxy_pass_request_headers on;
-        proxy_cache_bypass \$http_upgrade;
-    }
-
-    ssl_certificate /etc/ssl/certs/certbot-evryword.com.ng.pem;
-    ssl_certificate_key /etc/ssl/private/certbot-evryword.com.ng.pem;
-    ssl_dhparam /etc/ssl/certs/dhparam.pem;
+server {\n
+\tserver_name $HOSTNAME;\n
+\tlisten $HTTP_PORT;\n
+\tlisten [::]:$HTTP_PORT;\n
+\n
+\tlocation / {\n
+\t\treturn 301 https://\$host:$HTTPS_PORT\$request_uri;\n
+\t}\n
+}\n
+\n
+server {\n
+\tserver_name $HOSTNAME;\n
+\tlisten $HTTPS_PORT ssl http2;\n
+\tlisten [::]:$HTTPS_PORT ssl http2;\n
+\n
+\tlocation / {\n
+\t\tproxy_pass http://localhost:$DEST_PORT;\n
+\t\tproxy_set_header Upgrade \$http_upgrade;\n
+\t\tproxy_set_header Connection 'upgrade';\n
+\t\tproxy_set_header Host \$http_host;\n
+\t\tproxy_pass_request_headers on;\n
+\t\tproxy_cache_bypass \$http_upgrade;\n
+\t}\n
+\n
+\tssl_certificate /etc/ssl/certs/certbot-evryword.com.ng.pem;\n
+\tssl_certificate_key /etc/ssl/private/certbot-evryword.com.ng.pem;\n
+\tssl_dhparam /etc/ssl/certs/dhparam.pem;\n
 }"
 
-echo $conf > $nginxDest/$FILE_NAME
+echo -e $conf > $nginxDest/$FILE_NAME
