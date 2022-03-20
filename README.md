@@ -2,11 +2,33 @@
 
 I have used Docker Compose to write the configuration. This setup uses Jenkins and Docker in Docker.
 
-## Agents
+## Configure Host Agent
 
-Set up Agent Configuration on Jenkins Console
+Set up Host Agent Node Configuration on Jenkins Console and keep the required parameters like `-secret`. You first need to have java installed in the host. The Github actions have that step to install JDK though. Freely look into the script to see what it is doing.
 
-### Configure Clouds
+```bash
+sudo apt install openjdk-11-jdk -y
+```
+
+A lot of the steps are in the shell script [agent](./agent.sh) the workflow. But, to use the script some arguments are required.
+
+- JENKINS_BASE_URL: the base URL where JENKINS is served. Example `http://localhost:8080`
+- JENKINS_AGENT_SECRET: the secret generated after you have configured the agent on the Jenkins Console
+- JENKINS_JNLP_PATH: the path after Jenkins base URL just before the jnlp file (jenkins-agent.jnlp). Example `computer/node%2Dinitial`
+- PASSWORD: Root user password for starting the service that keeps the host agent running.
+- PATH_TO_AGENT (Optional): Path to where the agent is saved on disk. Example /path/to/agent.jar. If not provided, script attempts to get it by
+```
+wget $JEKINS_BASE_URL/jnlpJars/agent.jar
+```
+
+To execute script
+```bash
+# make it excutable
+chmod +x ./agent.sh
+./agent.sh $JENKINS_BASE_URL $JENKINS_AGENT_SECRET $JENKINS_JNLP_PATH $PASSWORD [$PATH_TO_AGENT]
+```
+
+## Configure Clouds
 
 Go to Configure Clouds [Here](http://localhost:5353/configureClouds/) and follow instructions in this [guide](https://davelms.medium.com/run-jenkins-in-a-docker-container-part-1-docker-in-docker-7ca75262619d)
 
@@ -23,22 +45,3 @@ docker exec jenkins-docker cat /certs/client/key.pem
 docker exec jenkins-docker cat /certs/client/cert.pem
 docker exec jenkins-docker cat /certs/client/ca.pem
 ```
-
-<!-- 
-### Agent Program
-
-Not certain though [here](http://localhost:5353/jnlpJars/agent.jar). Not sure a single build works for all agent instances.
-
-```bash
-docker cp path/to/agent.jar jenkins-container/name:/var/jenkins_home/nodes/agent-directory
-
-docker exec -it jenkins-docker mkdir -p var/jenkins_home/nodes/agent-directory/remoting
-
-docker exec -it jenkins-docker java -jar agent.jar -jnlpUrl http://localhost:8080/computer/agent%2Dnode%2D1/jenkins-agent.jnlp -secret 2a888a8e790afc93ea769dd6ce2cdc865ada42d8d12fa30fb137618206b0e2d6 -workDir "/var/jenkins_home/nodes/agent-directory" -failIfWorkDirIsMissing
-```
-
-### Agent Directory in Container
-
-```bash
-/var/jenkins_home/nodes/**/*
-``` -->
