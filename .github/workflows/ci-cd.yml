@@ -2,9 +2,9 @@ name: Jenkins CI/CD
 
 on:
   push:
-#     branches: [ agent-deployment ]
+    branches: [ agent-deployment ]
   pull_request:
-#     branches: [ agent-deployment ]
+    branches: [ agent-deployment ]
 
 jobs:
   deploy:
