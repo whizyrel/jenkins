@@ -2,22 +2,22 @@ name: Jenkins CI/CD
 
 on:
   push:
-    branches: [ deploy ]
+#     branches: [ agent-deployment ]
   pull_request:
-    branches: [ deploy ]
+#     branches: [ agent-deployment ]
 
 jobs:
   deploy:
 
     runs-on: [self-hosted, linux, x64, gci]
 
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     steps:
       - name: Checks Out to Repo 
         uses: actions/checkout@v2
+
+      - name: Install JDK
+        run: |
+          sudo apt install openjdk-11-jdk -y
 
       - name: Create config directory
         if: ${{ cancelled() == false && failure() == false }}
@@ -27,11 +27,14 @@ jobs:
       - name: Copy Source files
         if: ${{ cancelled() == false && failure() == false }}
         run: |
-          cp docker-compose.yml Dockerfile nginx-conf-gen.sh -t /home/${{secrets.USER}}/${{secrets.APP_PATH}}
-      
-      - name: Run Config
+          cp agent.sh -t /home/${{secrets.USER}}/${{secrets.APP_PATH}}
+
+      - name: Start Initial Agent
+        env:
+          JENKINS_BASE_URL: 'Http://localhost:5353'
+          JENKINS_AGENT_SECRET: 'JENKINS AGENT SECRET'
+          JENKINS_JNLP_PATH: 'computer/node%2Dinitial'
         if: ${{ cancelled() == false && failure() == false }}
         run: |
-          chmod +x nginx-conf-gen.sh
-          echo ${{secrets.SSH_PASSWORD}} | sudo -S ./nginx-conf-gen.sh gci-jenkins.evryword.com.ng --purpose=frontend 5353 jenkins-config.conf
-          docker-compose up -d
+          chmod +x agent.sh
+          ./agent.sh $JENKINS_BASE_URL $JENKINS_AGENT_SECRET $JENKINS_JNLP_PATH ${{secrets.SSH_PASSWORD}}
