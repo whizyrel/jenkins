@@ -30,6 +30,12 @@ fi
 
 if [ "$4" == '' ]
 then
+    echo 'No Password provided';
+    exit 127;
+fi
+
+if [ "$5" == '' ]
+then
     echo 'No Agent source provided, retrieving from Jenkins...';
     set -ex | wget $JEKINS_BASE/jnlpJars/agent.jar -O $JENKINS_HOME/$AGENT_SECRET/agent.jar
     AGENT_SOURCE=$JENKINS_HOME/$AGENT_SECRET/"agent.jar"
@@ -54,7 +60,7 @@ AGENT_SERVICE="[Unit]\nDescription=Jenkins Host Agent\n
 \n[Install]\nWantedBy=multi-user.target"
 
 set -ex | echo -e $AGENT_SERVICE > jenkins-agent-$AGENT_SECRET.service
-set -ex | systemctl enable $JENKINS_HOME/$AGENT_SECRET/jenkins-agent-$AGENT_SECRET.service
+set -ex | echo $5 | sudo -S systemctl enable $JENKINS_HOME/$AGENT_SECRET/jenkins-agent-$AGENT_SECRET.service
 # set -ex | sudo systemctl stop jenkins-agent-$AGENT_SECRET.service
-set -ex | systemctl start jenkins-agent-$AGENT_SECRET.service
+set -ex | echo $4 | sudo -S systemctl start jenkins-agent-$AGENT_SECRET.service
 exit 0
